@@ -294,5 +294,30 @@ namespace Test.Rules.BadPractice {
 			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
 			Assert.AreEqual (0, runner.Defects.Count, "Count");
 		}
+
+		public void LocalArrayWithoutThrow ()
+		{
+			var ex = new Exception [1];
+			ex [0] = new Exception ("A message to make the things happening on the stack more interesting");
+		}
+
+		[Test]
+		public void TestLocalArrayWithoutThrow ()
+		{
+			AssertRuleFailure ("LocalArrayWithoutThrow", 1);
+		}
+
+		public void LocalArrayWithThrow ()
+		{
+			var ex = new Exception [1];
+			ex [0] = new Exception ("A message");
+			throw ex [0];
+		}
+
+		[Test]
+		public void TestLocalArrayWithThrow ()
+		{
+			AssertRuleSuccess ("LocalArrayWithThrow");
+		}
 	}
 }

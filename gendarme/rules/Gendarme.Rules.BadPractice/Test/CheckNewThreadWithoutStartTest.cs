@@ -71,15 +71,6 @@ namespace Test.Rules.BadPractice {
 			runner = new TestRunner (rule);
 		}
 
-		public MethodDefinition GetTest (string name)
-		{
-			foreach (MethodDefinition method in type.Methods) {
-				if (method.Name == name)
-					return method;
-			}
-			return null;
-		}
-
 		private void ThreadStart () { }
 
 		public void DirectStart ()
@@ -90,9 +81,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestDirectThrow ()
 		{
-			MethodDefinition method = GetTest ("DirectStart");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("DirectStart");
 		}
 
 		public void SimpleError ()
@@ -103,9 +92,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestSimpleError ()
 		{
-			MethodDefinition method = GetTest ("SimpleError");
-			Assert.AreEqual (RuleResult.Failure, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (1, runner.Defects.Count, "Count");
+			AssertRuleFailure ("SimpleError", 1);
 		}
 
 		public void LocalVariable ()
@@ -120,9 +107,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestLocalVariable ()
 		{
-			MethodDefinition method = GetTest ("LocalVariable");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("LocalVariable");
 		}
 
 		public object Return ()
@@ -135,9 +120,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestReturn ()
 		{
-			MethodDefinition method = GetTest ("Return");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("Return");
 		}
 
 		public object ReturnOther ()
@@ -151,9 +134,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestReturnOther ()
 		{
-			MethodDefinition method = GetTest ("ReturnOther");
-			Assert.AreEqual (RuleResult.Failure, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (1, runner.Defects.Count, "Count");
+			AssertRuleFailure ("ReturnOther", 1);
 		}
 
 		public object Branch ()
@@ -168,9 +149,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestBranch ()
 		{
-			MethodDefinition method = GetTest ("Branch");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("Branch");
 		}
 
 		public Thread TryCatch ()
@@ -190,9 +169,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestTryCatch ()
 		{
-			MethodDefinition method = GetTest ("TryCatch");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("TryCatch");
 		}
 
 		public Thread TryCatch2 ()
@@ -214,9 +191,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestTryCatch2 ()
 		{
-			MethodDefinition method = GetTest ("TryCatch2");
-			Assert.AreEqual (RuleResult.Failure, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (1, runner.Defects.Count, "Count");
+			AssertRuleFailure ("TryCatch2", 1);
 		}
 
 		public void TryCatchFinally ()
@@ -237,9 +212,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestTryCatchFinally ()
 		{
-			MethodDefinition method = GetTest ("TryCatchFinally");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("TryCatchFinally");
 		}
 
 		public void Out (out Thread thread)
@@ -250,9 +223,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestOut ()
 		{
-			MethodDefinition method = GetTest ("Out");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("Out");
 		}
 
 		public void Ref (ref Thread thread)
@@ -263,9 +234,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestRef ()
 		{
-			MethodDefinition method = GetTest ("Ref");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("Ref");
 		}
 
 		public void Call ()
@@ -278,9 +247,7 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestCall ()
 		{
-			MethodDefinition method = GetTest ("Call");
-			Assert.AreEqual (RuleResult.Failure, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (1, runner.Defects.Count, "Count");
+			AssertRuleFailure ("Call", 1);
 		}
 
 		public void Call2 ()
@@ -292,9 +259,34 @@ namespace Test.Rules.BadPractice {
 		[Test]
 		public void TestCall2 ()
 		{
-			MethodDefinition method = GetTest ("Call2");
-			Assert.AreEqual (RuleResult.Success, runner.CheckMethod (method), "RuleResult");
-			Assert.AreEqual (0, runner.Defects.Count, "Count");
+			AssertRuleSuccess ("Call2");
+		}
+
+		public void LocalArrayWithStart ()
+		{
+			var threads = new Thread [2];
+			threads [1] = new Thread (ThreadStart);
+			// This is not the Thread we created, but by design, the stack analysis 
+			// does check indices...
+			threads [0].Start ();	
+		}
+
+		[Test]
+		public void TestLocalArray ()
+		{
+			AssertRuleSuccess ("LocalArrayWithStart");
+		}
+
+		public void LocalArrayWithoutStart ()
+		{
+			var threads = new Thread [3];
+			threads [2] = new Thread (ThreadStart);
+		}
+
+		[Test]
+		public void TestLocalArrayWithoutStart ()
+		{
+			AssertRuleFailure ("LocalArrayWithoutStart", 1);
 		}
 	}
 }

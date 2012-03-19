@@ -90,6 +90,17 @@ namespace Test.Rules.Fixtures {
 			foreach (MethodDefinition method in DefinitionLoader.GetTypeDefinition<T> ().Methods)
 				base.AssertRuleSuccess (method);
 		}
+
+		/// <summary>
+		/// Asserts that the rule has been executed successfully. 
+		/// </summary>
+		/// <param name="method">Method name. The method is expected 
+		/// to be contained in the type of <c>this</c>.</param>
+		protected void AssertRuleSuccess (string method)
+		{
+			TypeDefinition td = DefinitionLoader.GetTypeDefinition (this.GetType ());
+			base.AssertRuleSuccess (DefinitionLoader.GetMethodDefinition (td, method, null));
+		}
 		
 		/// <summary>
 		/// Asserts that the rule has been executed successfully. 
@@ -137,6 +148,18 @@ namespace Test.Rules.Fixtures {
 		{
 			foreach (MethodDefinition method in DefinitionLoader.GetTypeDefinition<T> ().Methods)
 				base.AssertRuleFailure (method, expectedCount);
+		}
+
+		/// <summary>
+		/// Asserts that the rule has failed.
+		/// </summary>
+		/// <param name="method">Method name.
+		/// Method is expected to be contained in the type of <c>this</c>.</param>
+		/// <param name="expectedCount">Expected defect count.</param>
+		protected void AssertRuleFailure (string method, int expectedCount)
+		{
+			TypeDefinition td = DefinitionLoader.GetTypeDefinition (this.GetType ());
+			base.AssertRuleFailure (DefinitionLoader.GetMethodDefinition (td, method, new Type [0]), expectedCount);
 		}
 		
 		/// <summary>
