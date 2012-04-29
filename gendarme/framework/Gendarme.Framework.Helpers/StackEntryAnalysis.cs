@@ -507,6 +507,29 @@ namespace Gendarme.Framework.Helpers {
 					return new StoreSlot (StoreType.Argument, sequence);
 				}
 
+			case Code.Ldelem_Any:
+			case Code.Ldelem_I:
+			case Code.Ldelem_I1:
+			case Code.Ldelem_I2:
+			case Code.Ldelem_I4:
+			case Code.Ldelem_I8:
+			case Code.Ldelem_Ref: {
+					/* Currently there are 2 arguments for Ldelem_* on the stack, 
+					 * we walk the instructions backwards until we reach the instruction 
+					 * which pushes the first argument of Ldelem_*, which is the array.
+					 * For the sake of simplicity and performance, the control flow is ignored. */
+					int ldelemArgNum = 2;
+					while (ins.Previous != null && ldelemArgNum > 0) {
+						ins = ins.Previous;
+						ldelemArgNum += ins.GetPopCount (this.Method) - ins.GetPushCount ();
+					}
+
+					if (ldelemArgNum == 0)
+						return GetLoadSlot (ins);
+
+					goto default;
+			}
+
 			case Code.Ldind_I:
 			case Code.Ldind_I1:
 			case Code.Ldind_I2:
@@ -559,6 +582,32 @@ namespace Gendarme.Framework.Helpers {
 					if (!this.Method.HasThis)
 						sequence--;
 					return new StoreSlot (StoreType.Argument, sequence);
+				}
+
+			case Code.Stelem_Any:
+			case Code.Stelem_I1:
+			case Code.Stelem_I2:
+			case Code.Stelem_I4:
+			case Code.Stelem_I8:
+			case Code.Stelem_R4:
+			case Code.Stelem_R8:
+			case Code.Stelem_Ref: {
+					/* Currently there are 3 arguments for Stelem_* on the stack, 
+					 * we walk the instructions backwards until we reach the instruction 
+					 * which pushes the first argument of Stelem_*, which is the array.
+					 * For the sake of simplicity and performance, the control flow is ignored. */
+					int stelemArgNum = 3;
+					while (ins.Previous != null && stelemArgNum > 0) {
+						ins = ins.Previous;
+						stelemArgNum += ins.GetPopCount (this.Method) - ins.GetPushCount ();
+					}
+
+					/* The array is actually loaded onto the stack, 
+					 * in order to store something in it, so we use GetLoadSlot */
+					if (stelemArgNum == 0)
+						return GetLoadSlot (ins);
+
+					goto default;
 				}
 
 			case Code.Stind_I:
